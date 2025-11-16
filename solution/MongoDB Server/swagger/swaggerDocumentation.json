@@ -1,0 +1,1021 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GoalNet360 API - MongoDB Secondary Server",
+    "version": "1.0.0",
+    "description": "This API powers a comprehensive soccer website, offering access to detailed team rankings, player and team information within specific competitions and seasons. It facilitates community interaction through a user chat feature. The main server (localhost:3000) interfaces with secondary Express (localhost:3001) and Spring Boot (localhost:8080) servers, connected to MongoDB and PostgreSQL databases for dynamic and static data respectively.",
+    "termsOfService": "http://api_url/terms/",
+    "contact": {
+      "name": "La Rosa Trucco",
+      "email": "info360@goalnet.com",
+      "url": "http://localhost:3000/"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001/mongo",
+      "description": "Secondary Express server connected to MongoDB for dynamic data."
+    }
+  ],
+  "paths": {
+    "/insert_games": {
+      "post": {
+        "summary": "Insert Games",
+        "description": "Inserts soccer games into the database.",
+        "requestBody": {
+          "description": "Games data to be inserted.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteGame"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Games inserted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "message": "Games inserted successfully."
+                }
+              }
+            }
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeoutError"
+          }
+        }
+      }
+    },
+    "/seasons": {
+      "get": {
+        "summary": "Get Seasons",
+        "description": "Retrieves seasons by competition ID.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of seasons.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "example": [
+                  2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023
+                ]
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/dates": {
+      "get": {
+        "summary": "Get Dates",
+        "description": "Retrieves dates by competition ID and season.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dates.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "example": [
+                  "2023-08-19",
+                  "2023-08-20",
+                  "2023-08-21",
+                  "2023-08-26",
+                  "2023-11-26",
+                  "2023-11-27"
+                ]
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/games": {
+      "get": {
+        "summary": "Get Games",
+        "description": "Retrieves games by competition ID, season, and date.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of games.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Game"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/final_positions": {
+      "get": {
+        "summary": "Get Final Positions",
+        "description": "Retrieves final positions of clubs...",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of final positions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinalClubPosition"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/games_events": {
+      "get": {
+        "summary": "Get Game Events",
+        "description": "Retrieves game events by game ID.",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of game events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GameEvent"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/insert_clubGames": {
+      "post": {
+        "summary": "Insert Club Games",
+        "description": "Inserts club games into the database.",
+        "requestBody": {
+          "description": "Club games data to be inserted.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClubGame"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Club games inserted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "message": "Club games inserted successfully."
+                }
+              }
+            }
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeoutError"
+          }
+        }
+      }
+    },
+    "/club_games": {
+      "get": {
+        "summary": "Get Club Games",
+        "description": "Retrieves all club games.",
+        "responses": {
+          "200": {
+            "description": "Club game details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClubGame"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/insert_gameLineups": {
+      "post": {
+        "summary": "Insert Game Lineups",
+        "description": "Inserts game lineups.",
+        "requestBody": {
+          "description": "Game lineup data to be inserted.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameLineup"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game lineups inserted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "message": "Game lineups inserted successfully."
+                }
+              }
+            }
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeoutError"
+          }
+        }
+      }
+    },
+    "/game_lineups": {
+      "get": {
+        "summary": "Get Game Lineups",
+        "description": "Retrieves all game lineups.",
+        "responses": {
+          "200": {
+            "description": "List of game lineups.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GameLineup"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/insert_appearances": {
+      "post": {
+        "summary": "Insert Appearances",
+        "description": "Inserts player appearances data.",
+        "requestBody": {
+          "description": "Player appearances data to be inserted.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Appearance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appearances inserted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "message": "Appearances inserted successfully."
+                }
+              }
+            }
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeoutError"
+          }
+        }
+      }
+    },
+    "/players_stats": {
+      "get": {
+        "summary": "Get Player Stats",
+        "description": "Retrieves player statistics (yellow cards, red cards, goals, assists, minutes played).",
+        "parameters": [
+          {
+            "name": "player_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of player stats.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerStats"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "An unexpected error occurred."
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "message": "Operation completed successfully."
+        }
+      },
+      "CompleteGame": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "type": "integer",
+            "description": "Unique identifier of the game",
+            "minimum": 1
+          },
+          "competition_id": {
+            "type": "string",
+            "description": "Identifier of the competition"
+          },
+          "season": {
+            "type": "integer",
+            "description": "Season of the game"
+          },
+          "round": {
+            "type": "string",
+            "description": "Round of the game",
+            "maxLength": 100
+          },
+          "date": {
+            "type": "string",
+            "description": "Date of the game",
+            "format": "date"
+          },
+          "home_club_id": {
+            "type": "integer",
+            "description": "Home club identifier",
+            "minimum": 1
+          },
+          "away_club_id": {
+            "type": "integer",
+            "description": "Away club identifier",
+            "minimum": 1
+          },
+          "home_club_goals": {
+            "type": "integer",
+            "description": "Number of goals scored by the home club",
+            "minimum": 0,
+            "maximum": 15
+          },
+          "away_club_goals": {
+            "type": "integer",
+            "description": "Number of goals scored by the away club",
+            "minimum": 0,
+            "maximum": 15
+          },
+          "home_club_position": {
+            "type": "integer",
+            "description": "League position of the home club",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "away_club_position": {
+            "type": "integer",
+            "description": "League position of the away club",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "home_club_manager_name": {
+            "type": "string",
+            "description": "Name of the home club's manager",
+            "maxLength": 200
+          },
+          "away_club_manager_name": {
+            "type": "string",
+            "description": "Name of the away club's manager",
+            "maxLength": 200
+          },
+          "stadium": {
+            "type": "string",
+            "description": "Stadium where the game is played",
+            "maxLength": 100
+          },
+          "attendance": {
+            "type": "integer",
+            "description": "Number of people in attendance",
+            "minimum": 0
+          },
+          "referee": {
+            "type": "string",
+            "description": "Referee of the game",
+            "maxLength": 200
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to more information about the game",
+            "maxLength": 700
+          },
+          "home_club_formation": {
+            "type": "string",
+            "description": "Formation of the home club",
+            "maxLength": 200
+          },
+          "away_club_formation": {
+            "type": "string",
+            "description": "Formation of the away club",
+            "maxLength": 200
+          },
+          "home_club_name": {
+            "type": "string",
+            "description": "Name of the home club",
+            "maxLength": 200
+          },
+          "away_club_name": {
+            "type": "string",
+            "description": "Name of the away club",
+            "maxLength": 200
+          },
+          "aggregate": {
+            "type": "string",
+            "description": "Aggregate score of the game",
+            "maxLength": 200
+          },
+          "competition_type": {
+            "type": "string",
+            "description": "Type of the competition (e.g., league, cup)",
+            "maxLength": 200
+          }
+        },
+        "example": {
+          "game_id": 123456,
+          "competition_id": "UEFA",
+          "season": 2023,
+          "round": "Group Stage",
+          "date": "2023-08-19",
+          "home_club_id": 1001,
+          "away_club_id": 1002,
+          "home_club_goals": 3,
+          "away_club_goals": 2,
+          "home_club_position": 1,
+          "away_club_position": 2,
+          "home_club_manager_name": "John Smith",
+          "away_club_manager_name": "Jane Doe",
+          "stadium": "Stadium Name",
+          "attendance": 50000,
+          "referee": "Referee Name",
+          "url": "https://example.com/game-info",
+          "home_club_formation": "4-3-3",
+          "away_club_formation": "4-4-2",
+          "home_club_name": "Home Club",
+          "away_club_name": "Away Club",
+          "aggregate": "3:2",
+          "competition_type": "League"
+        }
+      },
+      "Game": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier of the game record"
+          },
+          "game_id": {
+            "type": "integer",
+            "description": "Game identifier"
+          },
+          "home_club_id": {
+            "type": "integer",
+            "description": "Home club identifier"
+          },
+          "away_club_id": {
+            "type": "integer",
+            "description": "Away club identifier"
+          },
+          "home_club_name": {
+            "type": "string",
+            "description": "Name of the home club"
+          },
+          "away_club_name": {
+            "type": "string",
+            "description": "Name of the away club"
+          },
+          "aggregate": {
+            "type": "string",
+            "description": "Aggregate score of the game"
+          }
+        },
+        "example": {
+          "_id": "65a6f2d09eeac9475700aeb7",
+          "game_id": 4103475,
+          "home_club_id": 252,
+          "away_club_id": 430,
+          "home_club_name": "Genoa Cricket and Football Club",
+          "away_club_name": "Associazione Calcio Fiorentina",
+          "aggregate": "1:4"
+        }
+      },
+      "FinalClubPosition": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "clubId": {
+                  "type": "string",
+                  "description": "Unique identifier of the club"
+                },
+                "clubName": {
+                  "type": "string",
+                  "description": "Name of the club"
+                },
+                "points": {
+                  "type": "integer",
+                  "description": "Total points accumulated by the club"
+                },
+                "goalsScored": {
+                  "type": "integer",
+                  "description": "Total goals scored by the club"
+                },
+                "goalsConceded": {
+                  "type": "integer",
+                  "description": "Total goals conceded by the club"
+                },
+                "position": {
+                  "type": "integer",
+                  "description": "Final league position of the club"
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "positions": [
+            {
+              "clubId": "46",
+              "clubName": "Football Club Internazionale Milano S.p.A.",
+              "points": 32,
+              "goalsScored": 30,
+              "goalsConceded": 7,
+              "position": 1
+            },
+            {
+              "clubId": "8970",
+              "clubName": "Frosinone Calcio S.r.l.",
+              "points": 18,
+              "goalsScored": 19,
+              "goalsConceded": 21,
+              "position": 10
+            }
+          ]
+        }
+      },
+      "GameEvent": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier of the event"
+          },
+          "minute": {
+            "type": "integer",
+            "description": "Minute of the game when the event occurred"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of event (e.g., Goal, Card, Substitution)"
+          },
+          "club_id": {
+            "type": "integer",
+            "description": "Identifier of the club involved in the event"
+          },
+          "player_id": {
+            "type": "integer",
+            "description": "Identifier of the player involved in the event"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the event"
+          }
+        },
+        "example": {
+          "_id": "65980f2151a77195fec82f3e",
+          "minute": 5,
+          "type": "Goals",
+          "club_id": 430,
+          "player_id": 124555,
+          "description": ", Right-footed shot, 1. Goal of the Season Assist: , Pass, 1. Assist of the Season"
+        }
+      },
+      "ClubGame": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier of the game record"
+          },
+          "game_id": {
+            "type": "integer",
+            "description": "Game identifier"
+          },
+          "club_id": {
+            "type": "integer",
+            "description": "Club identifier"
+          },
+          "own_goals": {
+            "type": "integer",
+            "description": "Number of goals scored by the club"
+          },
+          "own_manager_name": {
+            "type": "string",
+            "description": "Name of the club's manager"
+          },
+          "opponent_id": {
+            "type": "integer",
+            "description": "Opponent club identifier"
+          },
+          "opponent_goals": {
+            "type": "integer",
+            "description": "Number of goals scored by the opponent"
+          },
+          "opponent_manager_name": {
+            "type": "string",
+            "description": "Name of the opponent club's manager"
+          },
+          "hosting": {
+            "type": "string",
+            "description": "Indicates if the club is hosting the game (Home/Away)"
+          },
+          "is_win": {
+            "type": "integer",
+            "description": "Indicates if the club won the game (1 for win, 0 for not win)"
+          }
+        },
+        "example": {
+          "-id": "65980f5651a77195fec8b26e",
+          "game_id": 2221751,
+          "club_id": 431,
+          "own_goals": 1,
+          "own_manager_name": "Lutz Göttling",
+          "opponent_id": 60,
+          "opponent_goals": 2,
+          "opponent_manager_name": "Christian Streich",
+          "hosting": "Home",
+          "is_win": 0
+        }
+      },
+      "GameLineup": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier for the lineup record"
+          },
+          "game_lineups_id": {
+            "type": "string",
+            "description": "Identifier for the game lineup"
+          },
+          "game_id": {
+            "type": "integer",
+            "description": "Game identifier"
+          },
+          "club_id": {
+            "type": "integer",
+            "description": "Club identifier"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of lineup (e.g., 'starting_lineup', 'substitute')"
+          },
+          "number": {
+            "type": "integer",
+            "description": "Jersey number of the player"
+          },
+          "player_id": {
+            "type": "integer",
+            "description": "Player identifier"
+          },
+          "player_name": {
+            "type": "string",
+            "description": "Name of the player"
+          },
+          "team_captain": {
+            "type": "integer",
+            "description": "Indicates if the player is the team captain (1 for yes, 0 for no)"
+          },
+          "position": {
+            "type": "string",
+            "description": "Playing position of the player"
+          }
+        },
+        "example": {
+          "_id": "65980e8a51a77195febcb551",
+          "game_lineups_id": "77b0f371923e0c8bdf050a1e269faaac",
+          "game_id": 3606208,
+          "club_id": 338,
+          "type": "starting_lineup",
+          "number": 89,
+          "player_id": 419061,
+          "player_name": "Vladyslav Supryaga",
+          "team_captain": 0,
+          "position": "Centre-Forward"
+        }
+      },
+      "Appearance": {
+        "type": "object",
+        "properties": {
+          "appearance_id": {
+            "type": "integer",
+            "description": "Unique identifier of the appearance record",
+            "minimum": 1
+          },
+          "game_id": {
+            "type": "integer",
+            "description": "Game identifier",
+            "minimum": 1
+          },
+          "player_id": {
+            "type": "integer",
+            "description": "Player identifier",
+            "minimum": 1
+          },
+          "date": {
+            "type": "string",
+            "description": "Date of the appearance",
+            "format": "date"
+          },
+          "player_name": {
+            "type": "string",
+            "description": "Name of the player",
+            "maxLength": 200
+          },
+          "competition_id": {
+            "type": "integer",
+            "description": "Competition identifier",
+            "minimum": 1
+          },
+          "yellow_cards": {
+            "type": "integer",
+            "description": "Number of yellow cards received by the player",
+            "minimum": 0
+          },
+          "red_cards": {
+            "type": "integer",
+            "description": "Number of red cards received by the player",
+            "minimum": 0
+          },
+          "goals": {
+            "type": "integer",
+            "description": "Number of goals scored by the player",
+            "minimum": 0
+          },
+          "assists": {
+            "type": "integer",
+            "description": "Number of assists by the player",
+            "minimum": 0
+          },
+          "minutes_played": {
+            "type": "integer",
+            "description": "Number of minutes played by the player",
+            "minimum": 0
+          }
+        },
+        "example": {
+          "appearance_id": 123456,
+          "game_id": 654321,
+          "player_id": 78910,
+          "date": "2023-08-19",
+          "player_name": "John Doe",
+          "competition_id": 345678,
+          "yellow_cards": 2,
+          "red_cards": 1,
+          "goals": 3,
+          "assists": 2,
+          "minutes_played": 90
+        }
+      },
+      "PlayerStats": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "integer",
+            "description": "Unique identifier of the player"
+          },
+          "total_yellow_cards": {
+            "type": "integer",
+            "description": "Total number of yellow cards received by the player"
+          },
+          "total_red_cards": {
+            "type": "integer",
+            "description": "Total number of red cards received by the player"
+          },
+          "total_goals": {
+            "type": "integer",
+            "description": "Total number of goals scored by the player"
+          },
+          "total_assists": {
+            "type": "integer",
+            "description": "Total number of assists by the player"
+          },
+          "total_minutes_played": {
+            "type": "integer",
+            "description": "Total number of minutes played by the player"
+          }
+        },
+        "example": {
+          "_id": 38004,
+          "total_yellow_cards": 4,
+          "total_red_cards": 0,
+          "total_goals": 28,
+          "total_assists": 12,
+          "total_minutes_played": 3045
+        }
+      }
+    },
+    "responses": {
+      "InternalServerError": {
+        "description": "Internal server error.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "GatewayTimeoutError": {
+        "description": "Error in inserting items. Gateway timeout occurred.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

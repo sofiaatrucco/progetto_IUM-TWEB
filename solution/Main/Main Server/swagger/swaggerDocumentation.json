@@ -1,0 +1,917 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GoalNet360 API",
+    "version": "1.0.0",
+    "description": "This API powers a comprehensive soccer website, offering access to detailed team rankings, player and team information within specific competitions and seasons. It facilitates community interaction through a user chat feature. The main server (localhost:3000) interfaces with secondary Express (localhost:3001) and Spring Boot (localhost:8080) servers, connected to MongoDB and PostgreSQL databases for dynamic and static data respectively.",
+    "termsOfService": "http://api_url/terms/",
+    "contact": {
+      "name": "La Rosa Trucco",
+      "email": "info360@goalnet.com",
+      "url": "http://localhost:3000/"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Main server of GoalNet360 interfacing with secondary servers for comprehensive data management."
+    },
+    {
+      "url": "http://localhost:3001/mongo",
+      "description": "Secondary Express server connected to MongoDB for dynamic data."
+    },
+    {
+      "url": "http://localhost:8080/postgres",
+      "description": "Secondary Spring Boot server connected to PostgreSQL for static data."
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Home Page",
+        "description": "Renders the home page of the application.",
+        "responses": {
+          "200": {
+            "description": "Successfully renders the home page."
+          }
+        }
+      }
+    },
+    "/get_countries": {
+      "get": {
+        "summary": "Fetch Countries",
+        "description": "Retrieves a list of countries from the Spring Boot server.",
+        "responses": {
+          "200": {
+            "description": "A list of countries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["Italy", "Spain", "Germany"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_competitions": {
+      "get": {
+        "summary": "Fetch Competitions",
+        "description": "Retrieves a list of competitions based on the provided country from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "required": true,
+            "description": "Country to filter the competitions",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of competitions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Competition"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_competitions_images": {
+      "get": {
+        "summary": "Fetch Competition Images",
+        "description": "Retrieves images for a specific competition from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Images of the competition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "example": ["https://tmssl.akamaized.net/images/logo/header/it1.png"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_clubs": {
+      "get": {
+        "summary": "Fetch Clubs",
+        "description": "Retrieves a list of clubs based on the provided competition ID from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of clubs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Club"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_seasons": {
+      "get": {
+        "summary": "Fetch Seasons",
+        "description": "Retrieves a list of seasons for a specific competition from the MongoDB server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of seasons",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "example": [2018, 2019, 2020, 2021]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_dates": {
+      "get": {
+        "summary": "Fetch Dates",
+        "description": "Retrieves a list of dates for games in a specific season and competition from the MongoDB server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "description": "Specific season of the competition",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of dates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["2023-08-19", "2023-08-20", "2023-08-21"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_games": {
+      "get": {
+        "summary": "Fetch Games",
+        "description": "Retrieves a list of games based on competition ID, season, and date from the MongoDB server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "description": "Specific season of the competition",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Specific date of the games",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Game"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_games_events": {
+      "get": {
+        "summary": "Fetch Game Events",
+        "description": "Retrieves events for a specific game from the MongoDB server.",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the game",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of game events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GameEvent"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_clubs_images": {
+      "get": {
+        "summary": "Fetch Clubs Images",
+        "description": "Retrieves images for a specific club from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "club_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the club",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Images of the club",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "example": ["https://tmssl.akamaized.net/images/wappen/header/1025.png"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_competitions_infos": {
+      "get": {
+        "summary": "Fetch Competitions Information",
+        "description": "Retrieves information about a specific competition from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Information about the competition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/count_clubs": {
+      "get": {
+        "summary": "Count Clubs in a Competition",
+        "description": "Counts the number of clubs participating in a specific competition from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Number of clubs in the competition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_final_clubs_positions": {
+      "get": {
+        "summary": "Fetch Final Clubs Positions",
+        "description": "Retrieves final positions of clubs in a specific competition and season from the MongoDB server.",
+        "parameters": [
+          {
+            "name": "competition_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the competition",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "description": "Specific season of the competition",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Final positions of clubs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FinalClubPosition"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_players": {
+      "get": {
+        "summary": "Fetch Players",
+        "description": "Retrieves data of players from a specific club from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "club_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the club",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of players",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Player"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_clubs_infos": {
+      "get": {
+        "summary": "Fetch Clubs Information",
+        "description": "Retrieves information about a specific club from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "club_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the club",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Information about the club",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_players_infos": {
+      "get": {
+        "summary": "Fetch Players Information",
+        "description": "Retrieves detailed information about a specific player from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "player_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the player",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detailed information about the player",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerInfos"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_players_images": {
+      "get": {
+        "summary": "Fetch Players Images",
+        "description": "Retrieves images for a specific player from the Spring Boot server.",
+        "parameters": [
+          {
+            "name": "player_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the player",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Images of the player",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/get_players_stats": {
+      "get": {
+        "summary": "Fetch Players stats",
+        "description": "Retrieves stats for a specific player from the MongoDB server.",
+        "parameters": [
+          {
+            "name": "player_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique identifier of the player",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player's stats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerStats"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Competition": {
+        "type": "object",
+        "properties": {
+          "competition_id": {
+            "type": "string",
+            "description": "The identifier of the competition"
+          },
+          "competition_name": {
+            "type": "string",
+            "description": "The name of the competition"
+          }
+        },
+        "example": {
+          "competition_id": "IT1",
+          "competition_name": "serie-a"
+        }
+      },
+      "Club": {
+        "type": "object",
+        "properties": {
+          "club_id": {
+            "type": "integer",
+            "description": "The identifier of the club"
+          },
+          "club_name": {
+            "type": "string",
+            "description": "The name of the club"
+          }
+        },
+        "example": {
+          "club_id": 12,
+          "club_name": "Associazione Sportiva Roma"
+        }
+      },
+      "Game": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "type": "integer",
+            "description": "The identifier of the game"
+          },
+          "home_club_id": {
+            "type": "integer",
+            "description": "The identifier of the home club"
+          },
+          "away_club_id": {
+            "type": "integer",
+            "description": "The identifier of the away club"
+          },
+          "home_club_name": {
+            "type": "string",
+            "description": "The home club's name"
+          },
+          "away_club_name": {
+            "type": "string",
+            "description": "The away club's name"
+          },
+          "aggregate": {
+            "type": "string",
+            "description": "The result of the match"
+          }
+        },
+        "example": {
+          "_id": "65a6f2d09eeac9475700aeb7",
+          "game_id": 4103475,
+          "home_club_id": 252,
+          "away_club_id": 430,
+          "home_club_name": "Genoa Cricket and Football Club",
+          "away_club_name": "Associazione Calcio Fiorentina",
+          "aggregate": "1:4"
+        }
+      },
+      "GameEvent": {
+        "type": "object",
+        "properties": {
+          "club_id": {
+            "type": "integer",
+            "description": "The identifier of the club"
+          },
+          "player_id": {
+            "type": "integer",
+            "description": "The identifier of the player involved in the event"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the event (e.g., goal, foul)"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the event"
+          },
+          "minute": {
+            "type": "integer",
+            "description": "The minute of the game when the event occurred"
+          }
+        },
+        "example": {
+          "_id": "65980f2151a77195fec82f3e",
+          "minute": 5,
+          "type": "Goals",
+          "club_id": 430,
+          "player_id": 124555,
+          "description": ", Right-footed shot, 1. Goal of the Season Assist: , Pass, 1. Assist of the Season"
+        }
+      },
+      "Player": {
+        "type": "object",
+        "properties": {
+          "player_id": {
+            "type": "integer",
+            "description": "The identifier of the player"
+          },
+          "player_name": {
+            "type": "string",
+            "description": "The player's full name"
+          },
+          "player_position": {
+            "type": "string",
+            "description": "The player's position on the team"
+          }
+        },
+        "example": {
+          "player_id": 165896,
+          "player_name": "Francesco Proietti Gaffi",
+          "player_position": "Goalkeeper"
+        }
+      },
+      "PlayerInfos": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the player"
+          },
+          "country_of_birth": {
+            "type": "string",
+            "description": "Country where the player was born"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "description": "Birthdate of the player",
+            "format": "date-time"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Height of the player in centimeters"
+          },
+          "current_club": {
+            "type": "string",
+            "description": "Current club of the player"
+          },
+          "position": {
+            "type": "string",
+            "description": "Playing position of the player"
+          },
+          "highest_market_value": {
+            "type": "integer",
+            "description": "Highest market value of the player in Euros"
+          }
+        },
+        "example": {
+          "name": "Francesco Proietti Gaffi",
+          "country_of_birth": "Italy",
+          "date_of_birth": "1994-05-21",
+          "height": 187,
+          "current_club": "AS Roma",
+          "position": "Goalkeeper",
+          "highest_market_value": 100000
+        }
+      },
+      "FinalClubPosition": {
+        "type": "object",
+        "properties": {
+          "clubId": {
+            "type": "integer",
+            "description": "Unique identifier of the club."
+          },
+          "clubName": {
+            "type": "string",
+            "description": "Name of the club."
+          },
+          "points": {
+            "type": "integer",
+            "description": "Total points accumulated by the club based on game results."
+          },
+          "goalsScored": {
+            "type": "integer",
+            "description": "Total number of goals scored by the club."
+          },
+          "goalsConceded": {
+            "type": "integer",
+            "description": "Total number of goals conceded by the club."
+          },
+          "position": {
+            "type": "integer",
+            "description": "Final standing position of the club in the competition based on points (and other criteria if applicable)."
+          }
+        },
+        "example": {
+          "clubId": "46",
+          "clubName": "Football Club Internazionale Milano S.p.A.",
+          "points": 32,
+          "goalsScored": 30,
+          "goalsConceded": 7,
+          "position": 1
+        }
+      },
+      "PlayerStats": {
+        "type": "object",
+        "properties": {
+          "total_yellow_cards": {
+            "type": "integer",
+            "description": "Total number of yellow cards of the player."
+          },
+          "total_red_cards": {
+            "type": "integer",
+            "description": "Total number of red cards of the player."
+          },
+          "total_goals": {
+            "type": "integer",
+            "description": "Total number of goals scored by the player."
+          },
+          "total_assists": {
+            "type": "integer",
+            "description": "Total number of assists by the player."
+          },
+          "total_minute_played": {
+            "type": "integer",
+            "description": "Total minutes played by the player"
+          }
+        },
+        "example": {
+          "_id": 38004,
+          "total_yellow_cards": 4,
+          "total_red_cards": 0,
+          "total_goals": 28,
+          "total_assists": 12,
+          "total_minutes_played": 3045
+        }
+      }
+    }
+  }
+}
+
+
+

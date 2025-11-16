@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>GoalNet360</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/stylesheets/style.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="../../socket.io/socket.io.js"></script>
+        <script src="/javascripts/index.js"></script>
+        <script src="../javascripts/profile.js"></script>
+        <script src="../javascripts/chatroom.js"></script>
+    </head>
+    <body onload="init_homepage()">
+        <nav class="navbar nav-main navbar-expand-sm">
+            <div class="container-fluid">
+                <h4><a class="navbar-brand text-white" href="http://localhost:3000/">GoalNet360</a></h4>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mynavbar">
+                    <ul class="navbar-nav me-auto">
+                        <li>
+                            <a class="nav-link text-white" href="http://localhost:63342/Main/LaRosa_Trucco_MainDirectory/solution/Main/Main%20Server/public/html/history.html?_ijt=6suee48tmjv66avdp0dkeejifq">History</a>
+                        </li>
+                        <li>
+                            <a class="nav-link text-white" href="http://localhost:63342/Main/LaRosa_Trucco_MainDirectory/solution/Main/Main%20Server/public/html/contacts.html?_ijt=lsbboieo58vkrtf6o9dg3j0uls">Contacts</a>
+                        </li>
+                    </ul>
+                    <form class="formSearch d-flex align-items-center">
+                        <label for="button_search" class="text-white">Search:&nbsp;</label>
+                        <input class="form-control me-2" type="text" id="button_search" name="button_search" required>
+                        <button class="btn btn-secondary" type="button" onclick="search()">Search</button>
+                    </form>
+                    <img id="profileImage" src="../images/avatar.jpg" alt="Profile Image" data-bs-toggle="modal" data-bs-target="#profileModal" class="rounded-circle" onclick="openLogin()">
+
+                    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="profileModalLabel">Login</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeLogin()">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <form id="loginForm" novalidate>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="username"><strong>Username</strong><span class="required-field">*</span></label>
+                                            <input type="text" class="form-control" id="username" placeholder="Username" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="password"><strong>Password</strong><span class="required-field">*</span></label>
+                                            <input type="password" class="form-control" id="password" placeholder="Password" required>
+                                            <span class="psw">Forgot <a href="#" id="resetLink" onclick="openPopup()">password?</a></span>
+                                            <div id="resetPopup">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closePopup()">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                                <br>
+                                                <p>We have sent an email to your address. Please check your inbox to reset your password.</p>
+                                            </div>
+                                            <div id="overlay"></div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="chatroom"><strong>Chatroom</strong><span class="required-field">*</span></label>
+                                            <input type="text" class="form-control" id="chatroom" placeholder="Chatroom" required>
+                                        </div>
+                                        <div class="mb-3 text-center">
+                                            <label>Aren't you signed up yet?</label>
+                                            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#registerModal">Sign In</button>
+                                        </div>
+                                        <div class="mb-3">
+                                            <input type="checkbox" checked="checked" id="remember" name="remember">
+                                            <label for="remember">Remember me</label>
+                                        </div>
+                                    </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="closeLogin()">Cancel</button>
+                                    <button type="button" class="btn btn-primary" onclick="click_login()">Log In</button>
+                                </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="checkPopupModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="checkPopupLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="checkPopupLabel">Error!</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeCheckPopup()">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-danger" role="alert">
+                                        Please fill in all the fields in the form.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="clickOkCheckPopup()">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="registerModalLabel">Register</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeSignin()">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Please fill in this form to create an account.</p>
+                                    <hr>
+                                    <form id="registerForm">
+                                        <label for="emailRegister"><strong>Email</strong><span class="required-field">*</span></label>
+                                        <input type="text" class="form-control" placeholder="Enter Email" name="emailRegister" id="emailRegister" required>
+
+                                        <label for="pswRegister"><strong>Password</strong><span class="required-field">*</span></label>
+                                        <input type="password" class="form-control" placeholder="Enter Password" name="pswRegister" id="pswRegister" required>
+
+                                        <label for="psw-repeatRegister"><strong>Repeat Password</strong><span class="required-field">*</span></label>
+                                        <input type="password" class="form-control" placeholder="Repeat Password" name="psw-repeatRegister" id="psw-repeatRegister" required>
+                                        <hr>
+
+                                        <p>By creating an account you agree to our <a href="#">Terms & Privacy</a>.</p>
+
+                                        <button type="submit" class="btn btn-dark">Register</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row bg-secondary p-2" id="rowFilters">
+                <div class="col-auto">
+                    <h5 class="text-white">Filters:</h5>
+                </div>
+                <div class="col-auto">
+                    <label for="selectCountry" class="text-white">Select country:</label>
+                    <select id="selectCountry" name="selectCountry"></select><br><br>
+                </div>
+                <div class="col-auto">
+                    <label for="selectCompetition" class="text-white">Select competition:</label>
+                    <select id="selectCompetition" name="selectCompetition"></select><br><br>
+                </div>
+            </div>
+        </div>
+
+    <div class="menu-container" id="btnCompetition"></div>
+        </div>
+        <br>
+
+        <div class="container-fluid">
+            <div class="container-title">
+                <div class="line-title" id="titleWelcomeLine1"></div>
+                <h1 class="title" id="titleWelcome">Welcome to GoalNet360</h1>
+                <div class="line-title" id="titleWelcomeLine2"></div>
+            </div>
+            <div class="row p-2 justify-content-center">
+                <div class="col-md-3"></div>
+                <div class="col-md-6 p-0 text-center vertical-middle">
+                    <img src="../images/logo.jpg" alt="GoalNet360 Logo" class="text-center">
+                    <p class="p-2" id="pWelcome">Welcome to the magical world of GoalNet360, the place where passion for football comes to life! We're here to offer you an engaging and informative experience, providing fresh news, detailed statistics, and all the latest updates about your favorite clubs, players, and competitions. Dive into the heart of the game, explore the dynamics of world football, and stay updated on everything related to your favorite sport. GoalNet360 is more than just a website, it's your destination to experience football in a complete and engaging way. We're excited to share with you every goal, every win, and every emotion that the world of football has to offer. Welcome to our football universe, where passion meets information!</p>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+            <div class="container-title">
+                <div class="line-title"></div>
+                <h2 class="title">Latest football transfer news</h2>
+                <div class="line-title"></div>
+            </div>
+
+            <div class="row p-2 justify-content-center align-items-center">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 p-0">
+
+                    <div class="container">
+                        <div class="section">
+                            <div class="timeline_aside">
+                                <div class="timedot"></div>
+                                <div class="timeline"></div>
+                            </div>
+                            <div class="newsMarket-item">
+                                <div class="timestamp">2 minutes ago</div>
+                                <h4>Manchester United Signs Promising Young Midfielder from Portuguese League</h4>
+                                <p>Manchester United signs a promising young midfielder from the Portuguese league, adding depth to their squad.</p>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <div class="timeline_aside">
+                                <div class="timedot"></div>
+                                <div class="timeline"></div>
+                            </div>
+                            <div class="newsMarket-item">
+                                <div class="timestamp">5 minutes ago</div>
+                                <h4>Barcelona Eyes Talented Brazilian Striker for Summer Transfer Window</h4>
+                                <p>Barcelona is interested in acquiring a talented Brazilian striker to bolster their attacking options for the upcoming season.</p>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <div class="timeline_aside">
+                                <div class="timedot"></div>
+                                <div class="timeline"></div>
+                            </div>
+                            <div class="newsMarket-item">
+                                <div class="timestamp">10 minutes ago</div>
+                                <h4>Juventus Completes Transfer Deal for Experienced Spanish Defender</h4>
+                                <p>Juventus completes a transfer deal for an experienced Spanish defender, strengthening their defensive lineup.</p>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <div class="timeline_aside">
+                                <div class="timedot"></div>
+                                <div class="timeline"></div>
+                            </div>
+                            <div class="newsMarket-item">
+                                <div class="timestamp">19 minutes ago</div>
+                                <h4>Arsenal Secures Loan Move for Promising English Winger</h4>
+                                <p>Arsenal secures a loan move for a promising English winger, providing valuable playing time and experience.</p>
+                            </div>
+                        </div>
+                        <div class="text-center p-3" id="divViewMoreBtn">
+                            <button id="viewMoreBtn" class="btn" onclick="viewMore()">View more</button>
+                        </div>
+
+                        <div id="additionalNews">
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">24 minutes ago</div>
+                                    <h4>Real Madrid Targets Italian Midfielder for Midfield Reinforcement</h4>
+                                    <p>Real Madrid targets an Italian midfielder to reinforce their midfield, aiming to add creativity and control to their game.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">32 minutes ago</div>
+                                    <h4>Chelsea in Talks with French Club for Loan Move of Talented Midfielder</h4>
+                                    <p>Chelsea is in talks with a French club for a loan move of a talented midfielder, seeking to enhance their midfield depth.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">38 minutes ago</div>
+                                    <h4>Bayern Munich Considering Bid for Dutch Forward to Bolster Attacking Options</h4>
+                                    <p>Bayern Munich considers a bid for a Dutch forward to add firepower to their attacking line.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">43 minutes ago</div>
+                                    <h4>Liverpool Explores Options for Defensive Reinforcements in Transfer Market</h4>
+                                    <p>Liverpool explores options for defensive reinforcements in the transfer market, aiming to shore up their backline.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">46 minutes ago</div>
+                                    <h4>Paris Saint-Germain Interested in Signing Argentine Goalkeeper as Backup</h4>
+                                    <p>Paris Saint-Germain shows interest in signing an Argentine goalkeeper as a backup option to strengthen their squad.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">49 minutes ago</div>
+                                    <h4>Tottenham Hotspur Negotiates Deal for South Korean Winger from Bundesliga</h4>
+                                    <p>Tottenham Hotspur negotiates a deal for a South Korean winger from the Bundesliga, eyeing speed and skill on the wings.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">53 minutes ago</div>
+                                    <h4>AC Milan Completes Permanent Transfer of Croatian Midfielder from La Liga</h4>
+                                    <p>AC Milan completes the permanent transfer of a Croatian midfielder from La Liga, adding versatility to their midfield.</p>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="timeline_aside">
+                                    <div class="timedot"></div>
+                                    <div class="timeline"></div>
+                                </div>
+                                <div class="newsMarket-item">
+                                    <div class="timestamp">59 minutes ago</div>
+                                    <h4>Atletico Madrid Looks to Strengthen Defense with Signing of Uruguayan Center-Back</h4>
+                                    <p>Atletico Madrid looks to strengthen their defense with the signing of an Uruguayan center-back, aiming for solidity at the back.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center p-3" id="divShowLessBtn">
+                            <button id="showLessBtn" class="btn" onclick="showLess()">Show less</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+            <br>
+            <div class="container-title">
+                <div class="line-title"></div>
+                <h2 class="title">HEADLINE NEWS</h2>
+                <div class="line-title"></div>
+            </div>
+            <div class="row p-2 justify-content-center align-items-center">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 text-center p-0 vertical-middle">
+                    <div id="carouselExampleControls" class="carousel slide" data-bs-interval="false">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Paris Saint-Germain announces record-breaking transfer deal</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/paris_saint_germain.jpg" class="card-img-top" alt="news7">
+                                                    <p class="card-text">Paris Saint-Germain has shattered transfer records with the signing of a world-class striker from a top European club. The astronomical fee reflects the club's determination to secure top talent as they pursue domestic and continental success.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Atletico Madrid unveils plans for state-of-the-art training facility</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/atletico_madrid.jpg" class="card-img-top" alt="news8">
+                                                    <p class="card-text">Atletico Madrid has unveiled ambitious plans for a cutting-edge training complex that will rival the best in the world. The state-of-the-art facility is designed to provide players with top-class amenities and support their development both on and off the pitch.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Borussia Dortmund's wonderkid attracts interest from European giants</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/borussia.jpg" class="card-img-top" alt="news9">
+                                                    <p class="card-text">Borussia Dortmund's teenage sensation has become the subject of intense transfer speculation, with several top clubs across Europe vying for his signature. The highly sought-after youngster has impressed with his dazzling performances and maturity beyond his years.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Manchester City clinches the Premier League title in a thrilling season finale</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/manchester_city.jpg" class="card-img-top" alt="news4">
+                                                    <p class="card-text">Manchester City secured the Premier League title on the final day of the season with a dramatic victory over their closest rivals. The win caps off a remarkable campaign for Pep Guardiola's side.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Barcelona unveils plans for a major stadium renovation</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/barcelona.jpg" class="card-img-top" alt="news5">
+                                                    <p class="card-text">Barcelona has revealed ambitious plans for the renovation of their iconic stadium. The project aims to modernize the venue and enhance the fan experience, solidifying Barcelona's status as a global football powerhouse.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">AC Milan's young prodigy earns call-up to national team</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/ac_milan.jpg" class="card-img-top" alt="news6">
+                                                    <p class="card-text">AC Milan's rising star has caught the attention of national team selectors with his exceptional performances in Serie A. The talented youngster is set to make his international debut in the upcoming fixtures, marking a significant milestone in his career.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Arsenal makes a comeback with a dramatic 2-1 victory against Chelsea</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/arsenal.jpg" class="card-img-top" alt="news1">
+                                                    <p class="card-text">After trailing 1-0 in the first half, Arsenal staged an impressive comeback with two late goals to secure a vital win over their London rivals Chelsea.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Juventus signs a promising young talent from Brazil's fertile football fields</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/juventus.jpg" class="card-img-top" alt="news2">
+                                                    <p class="card-text">Juventus has bolstered their squad by signing a highly-rated young forward from Brazil. The talented player is expected to bring flair and creativity to the team's attacking lineup.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card card-news">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Bayern Munich secures contract extension for star midfielder</h5>
+                                                    <div class="separator-news"></div>
+                                                    <img src="../images/bayern.jpg" class="card-img-top" alt="news3">
+                                                    <p class="card-text">Bayern Munich has announced the contract extension of their influential midfielder, who has been a key figure in the team's recent success. The extension comes amidst interest from top European clubs.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="carousel-control-prev btn-dark" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next btn-dark" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+        </div>
+        <button onclick="scrollToTop()" id="btnScrollToTop" class="btn" title="Go to top">Top &#129045;</button>
+        <footer class="fixed">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h4>Contact Us</h4>
+                        <p>Email: info360@goalnet.com</p>
+                        <p>Telephone: (123) 456-7890</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Follow Us</h4>
+                        <p>Facebook | Twitter | Instagram</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a class="text-white" href="http://localhost:3000/">Home</a></li>
+                            <li><a class="text-white" href="http://localhost:63342/Main/LaRosa_Trucco_MainDirectory/solution/Main/Main%20Server/public/html/history.html?_ijt=6suee48tmjv66avdp0dkeejifq">History</a></li>
+                            <li><a class="text-white" href="http://localhost:63342/Main/LaRosa_Trucco_MainDirectory/solution/Main/Main%20Server/public/html/contacts.html">Contacts</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p>&copy; 2024 Your Soccer Website. All rights reserved.</p>
+        </footer>
+    </body>
+</html>
+
+
